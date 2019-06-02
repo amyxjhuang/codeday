@@ -1,14 +1,17 @@
 import pygame
+from test import f
 pygame.init()
+pygame.mixer.pre_init()
+pygame.mixer.init()
 
 win = pygame.display.set_mode((800,500)) #dimensions of window
 pygame.display.set_caption("Night Shift")
 # pygame.mixer.pre_init(44100, 16, 2, 4096)
 # pygame.mixer.music.("music.mp3") #need to add music
-music = pygame.mixer.music.load("music.mp3")
+# sound = pygame.mixer.Sound("hit.wav")
+hitSound = pygame.mixer.Sound('hit.wav')
 
-pygame.mixer.music.play(-1) # -1 will ensure the song keeps looping
-
+f()
 walkRight = [pygame.image.load('sprites/R1.png'), pygame.image.load('sprites/R2.png'), pygame.image.load('sprites/R3.png')]
 walkLeft = [pygame.image.load('sprites/L1.png'), pygame.image.load('sprites/L2.png'), pygame.image.load('sprites/L3.png')]
 idle = pygame.image.load('sprites/F1.png')
@@ -159,8 +162,10 @@ class enemy(object):
                 self.walkCount = 0
 
     def hit(self):
-        pygame.mixer.music.load("hit.mp3") #need to add music
-        # pygame.mixer.Channel(1).play(pygame.mixer.music("hit.mp3")) #need to add music
+        # pygame.mixer.Channel(0).play(pygame.mixer.Sound('sound\gun_fire.wav'), maxtime=600)
+
+        hitSound.play()
+        # pygame.mixer.Channel(1).play(pygame.mixer.Sound("hit.wav")) #need to add music
 
         print('kachOW! You just HIT annie')
         if self.health > 0:
