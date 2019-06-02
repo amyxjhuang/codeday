@@ -2,9 +2,12 @@ import pygame
 pygame.init()
 
 win = pygame.display.set_mode((800,500)) #dimensions of window
-# music = pygame.mixer.music.load("nothing") #need to add music
-pygame.display.set_caption("janitor")
-# pygame.mixer.music.play(-1)
+pygame.display.set_caption("Night Shift")
+# pygame.mixer.pre_init(44100, 16, 2, 4096)
+# pygame.mixer.music.("music.mp3") #need to add music
+music = pygame.mixer.music.load("music.mp3")
+
+pygame.mixer.music.play(-1) # -1 will ensure the song keeps looping
 
 walkRight = [pygame.image.load('sprites/R1.png'), pygame.image.load('sprites/R2.png'), pygame.image.load('sprites/R3.png')]
 walkLeft = [pygame.image.load('sprites/L1.png'), pygame.image.load('sprites/L2.png'), pygame.image.load('sprites/L3.png')]
@@ -20,7 +23,8 @@ scene3 = pygame.image.load('scene3.png')
 scene4 = pygame.image.load('scene4.png')
 scene5 = pygame.image.load('scene5.png')
 scene6 = pygame.image.load('scene6.png')
-
+title = pygame.image.load('title.jpeg')
+endscene = pygame.image.load('endscene.png')
 
 r1_bg1 = pygame.image.load('background/r1_bg1.jpeg')
 r1_bg2 = pygame.image.load('background/r1_bg2.jpeg')
@@ -29,11 +33,22 @@ r2_bg = pygame.image.load('background/r2_bg.png')
 r3_bg = pygame.image.load('background/r3_bg.png')
 r4_bg = pygame.image.load('background/r4_bg.png')
 
-final = pygame.image.load('background/final.jpeg')
+final1 = pygame.image.load('background/final1.png')
+final2 = pygame.image.load('background/final2.png')
+
+win1 = pygame.image.load('background/win1.jpeg')
+win2 = pygame.image.load('background/win2.jpeg')
 
 r2_text = pygame.image.load('text/r2_text.png')
 r3_text = pygame.image.load('text/r3_text.png')
 r4_text = pygame.image.load('text/r4_text.png')
+
+marina = pygame.image.load('marina.png')
+dead = pygame.image.load('dead.png')
+r5_text = pygame.image.load('marina-3.png')
+success = pygame.image.load('win.png')
+night_shift = pygame.image.load('nightshift.png')
+hello = pygame.image.load('hello.png')
 
 # end = pygame.image.load('endscreen.png')
 font = pygame.font.SysFont("comicsansms", 18)
@@ -104,8 +119,9 @@ class enemy(object):
 
     def draw(self,win):
 
-        self.move()
+
         if self.visible:
+            self.move()
             if self.attacked:
                 win.blit(self.gotHit, (self.x, self.y))
             else:
@@ -122,6 +138,9 @@ class enemy(object):
             pygame.draw.rect(win, (255,0,0), (self.hitbox[0], self.hitbox[1] - 20, 50, 10))
             pygame.draw.rect(win, (0,128,0), (self.hitbox[0], self.hitbox[1] - 20, 50 - (5 * (10 - self.health)), 10))
             self.hitbox = (self.x + 17, self.y + 2, 31, 57)
+
+        else:
+            win.blit(dead, (self.x, self.y))
 #pygame.draw.rect(win, (255,0,0), self.hitbox,2)
 
 
@@ -140,6 +159,9 @@ class enemy(object):
                 self.walkCount = 0
 
     def hit(self):
+        pygame.mixer.music.load("hit.mp3") #need to add music
+        # pygame.mixer.Channel(1).play(pygame.mixer.music("hit.mp3")) #need to add music
+
         print('kachOW! You just HIT annie')
         if self.health > 0:
             self.health -= 0.5
@@ -150,19 +172,24 @@ screen = 0
 startLoop = 0
 standStill = [0, 0, 0, 0, 0, 0]
 screen1loop = 0
+can_pass = False
 def redrawGameWindow(screen):
     global screen1loop
     global standStill
     global pointer
     global startLoop
-    print(reese.x)
-    if screen == 0: ### START SCREEN ####
-        global startLoop
-        win.blit(s1,(0,0))
+    print(screen)
 
-        if startLoop <= 10:
-            win.blit(s2, (0,0))
-        startLoop = (startLoop + 1) % 20
+    if screen == 0:
+        win.blit(title,(0,0))
+
+    # if screen == 0: ### START SCREEN ####
+    #     global startLoop
+    #     win.blit(s1,(0,0))
+    #
+    #     if startLoop <= 10:
+    #         win.blit(s2, (0,0))
+    #     startLoop = (startLoop + 1) % 20
         pygame.display.update()
 
         return
@@ -178,6 +205,7 @@ def redrawGameWindow(screen):
             reese.x = 99
             dialogue(bg, scene1)
 
+        pygame.display.update()
 
     if screen == 2:
         if keys[pygame.K_SPACE]:
@@ -194,16 +222,18 @@ def redrawGameWindow(screen):
         win.blit(r2_bg, (0,0))
         if not annie1.visible:
             win.blit(r2_text, (0,0))
+            can_pass = True
         if standStill[screen] < 60:
             reese.x = 6
             dialogue(r2_bg, scene2)
             standStill[screen] += 1
+            can_pass = False
 
-        if standStill[screen] > 59 and standStill[screen] < 100:
+        if standStill[screen] > 59 and standStill[screen] < 120:
             reese.x = 6
             standStill[screen] += 1
 
-            dialogue(r2_bg, scene3)
+            dialogue(hello, scene3)
         annie1.draw(win)
         if not annie1.visible and standStill[screen] > 99 and standStill[screen] < 140:
             dialogue(r2_bg, scene4)
@@ -227,10 +257,13 @@ def redrawGameWindow(screen):
         win.blit(r3_bg, (0,0))
         if not annie2.visible:
             win.blit(r3_text, (0,0))
+            can_pass = True
         if standStill[screen] < 60:
+            can_pass = False
             reese.x = 6
             dialogue(r3_bg, scene5)
             standStill[screen] += 1
+
         annie2.draw(win)
         if not annie2.visible and standStill[screen] > 99 and standStill[screen] < 140:
             dialogue(r3_bg, scene5)
@@ -238,6 +271,7 @@ def redrawGameWindow(screen):
 
 
     if screen == 4:
+
         if abs(reese.x - annie4.x) < abs(reese.x - annie3.x) or not annie3.visible:
             pointer = annie4.x
         elif abs(reese.x - annie4.x) > abs(reese.x - annie3.x):
@@ -264,6 +298,7 @@ def redrawGameWindow(screen):
         if standStill[screen] < 60:
             reese.x = 6
             dialogue(r4_bg, scene6)
+            can_pass = False
             standStill[screen] += 1
         annie3.draw(win)
         annie4.draw(win)
@@ -271,18 +306,50 @@ def redrawGameWindow(screen):
         if not annie3.visible and not annie4.visible and standStill[screen] > 99 and standStill[screen] < 140:
             dialogue(r4_bg, scene4)
         if not annie3.visible and not annie4.visible:
-            win.blit(r4_text, (-60,0))
+            win.blit(r4_text, (-60,20))
+            can_pass = True
+
+        screen1loop = 0
 
     if screen == 5:
-        win.blit(final, (0,0))
+        bg = final1
+        if screen1loop <= 10:
+            bg = final2
+        screen1loop = (screen1loop + 1) % 20
+        win.blit(bg, (0,0))
+        win.blit(marina,(600,350))
+        win.blit(r5_text, (0,0))
+        if reese.x >= 99 and standStill[screen] < 50:
+            standStill[screen] += 1
+            reese.x = 99
+            win.blit(success, (reese.x + 20, reese.y - 70))
+            reese.draw(win)
+            pygame.display.update()
+        if (reese.x >= 200) and (standStill[screen] < 250):
+            standStill[screen] += 1
+            reese.x = 200
+            win.blit(night_shift, (reese.x + 20, reese.y - 70))
+            reese.draw(win)
+            pygame.display.update()
+        if reese.x >= 400 and standStill[screen] < 300 and standStill[screen]> 249:
+            standStill[screen] += 1
+            reese.x = 400
+            win.blit(endscene, (30, 30))
+            reese.draw(win)
+            pygame.display.update()
+        if standStill[screen] > 299:
+            bg = win1
+            if screen1loop <= 10:
+                bg = win2
+            screen1loop = (screen1loop + 1) % 20
+            win.blit(bg, (0,0))
     reese.draw(win)
     pygame.display.update()
 
-    win.blit(marina.png,(175,60))
 
 def dialogue(background, text):
     win.blit(background, (0,0))
-    win.blit(text, (reese.x + 20, reese.y - 70))
+    win.blit(text, (reese.x + 20, reese.y - 100))
     reese.draw(win)
     pygame.display.update()
 
@@ -294,14 +361,22 @@ annie4 = enemy(200, 385, 64, 64, 450)
 
 pointer = annie1.x
 
+start = False
 
 while True:
+    print(can_pass)
+    print(annie1.visible)
+    pointer = annie1.x
+
     clock.tick(20) #Frames per second
     keys = pygame.key.get_pressed()
 
-    #### START SCREEN ####
+    if screen == -1:
+        if any(keys):
+            screen = 0
+    #### START  SCREEN ####
     if screen == 0:
-        if keys[pygame.K_TAB]:
+        if any(keys):
             screen = 1
 
     #### QUIT GAME ####
@@ -329,7 +404,7 @@ while True:
             reese.x = 1
             screen += 1
 
-    if reese.x >= 800 and screen < 5 and screen > 1:
+    if reese.x >= 800 and screen < 5 and screen > 1 and (not annie1.visible or not annie2.visible or not (annie3.visible or annie4.visible)):
         reese.x = 1
         screen += 1
     if reese.x <= 0 and screen > 1:
@@ -341,5 +416,6 @@ while True:
 
     #### REDRAW GAME WINDOW ####
     redrawGameWindow(screen)
+
 
 pygame.quit()
